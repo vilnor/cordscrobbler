@@ -1,6 +1,5 @@
 import * as Discord from 'discord.js';
 import * as dotenv from 'dotenv';
-import * as firebaseAdmin from 'firebase-admin';
 import * as utils from './utils';
 
 import fs from 'fs';
@@ -16,11 +15,6 @@ import { DatabaseService } from './database-service';
 console.log('Configuring environment variables...')
 dotenv.config();
 
-console.log('Connecting to Firebase...')
-firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(JSON.parse(Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY, 'base64').toString('utf-8'))),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
-});
 
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -29,7 +23,7 @@ const spotifyApi = new SpotifyWebApi({
 
 const client = new Discord.Client();
 const dataProvidingService = new DataProvidingService();
-const databaseService = new DatabaseService(firebaseAdmin.firestore());
+const databaseService = new DatabaseService();
 const usersService = new UsersService(databaseService);
 
 const commands = new Discord.Collection<string, any>();

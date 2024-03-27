@@ -1,37 +1,43 @@
 import { RegisteredUser } from './users-service';
+import { Pool } from 'pg';
 
 export class DatabaseService {
-    private firestore: FirebaseFirestore.Firestore
-    private registeredUsersRef: FirebaseFirestore.CollectionReference<RegisteredUser>;
+    private pool: Pool;
 
-    constructor(firestore: FirebaseFirestore.Firestore) {
-        this.firestore = firestore;
-        this.registeredUsersRef = this.firestore.collection('registeredUsers') as FirebaseFirestore.CollectionReference<RegisteredUser>;
+    constructor() {
+        // this pulls connection details form environment variables
+        this.pool = new Pool();
     }
 
     async retrieveAllRegisteredUsers() {
-        const registeredUsersSnapshot = await this.registeredUsersRef.get();
-        const registeredUsers: RegisteredUser[] = [];
-        registeredUsersSnapshot.forEach((registeredUsersDoc) => {
-            registeredUsers.push(registeredUsersDoc.data())
-        });
-        return registeredUsers;
+        const { rows } = await this.pool.query('SELECT * FROM registered_users');
+        return rows;
     }
 
     async setRegisteredUser(registeredUser: RegisteredUser) {
-        await this.registeredUsersRef.doc(registeredUser.discordUserId).set(registeredUser);
+        await this.pool.query(
+            "INSERT INTO registered_users (discordUserId, lastfmUserName, lastfmSessionKey, isScrobbleOn, sendNewsMessages, registrationTimestamp) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (discordUserId) DO UPDATE SET lastfmUserName = $2, lastfmSessionKey = $3, isScrobbleOn = $4, sendNewsMessages = $5, registrationTimestamp = $6",
+            [
+                registeredUser.discordUserId,
+                registeredUser.lastfmUserName,
+                registeredUser.lastfmSessionKey,
+                JSON.stringify(registeredUser.isScrobbleOn),
+                JSON.stringify(registeredUser.sendNewsMessages),
+                JSON.stringify(registeredUser.registrationTimestamp),
+            ]
+        );
     }
 
     async getRegisteredUser(discordUserId: string) {
-        const registeredUserDoc = await this.registeredUsersRef.doc(discordUserId).get();
-        if (!registeredUserDoc.exists) {
+        const { rows } = await this.pool.query('SELECT * FROM registered_users where discordUserId = $1', [discordUserId]);
+        if (!rows.length) {
             throw new Error('UserNotExistsInDatabase')
         }
 
-        return registeredUserDoc.data()
+        return rows[0];
     }
 
     async deleteRegisteredUser(discordUserId: string) {
-        await this.registeredUsersRef.doc(discordUserId).delete();
+        await this.pool.query('DELETE FROM registered_users where discordUserId = $1', [discordUserId]);
     }
 }
