@@ -5,6 +5,7 @@ import { JockieDataProvider } from './data-providers/jockie';
 import { TempoDataProvider } from './data-providers/tempo';
 import { GroovyDataProvider } from './data-providers/groovy';
 import { RythmDataProvider } from './data-providers/rythm';
+import { FlaviDataProvider } from './data-providers/flavi';
 
 export interface DataProvider {
     providerName: string;
@@ -30,6 +31,7 @@ export const allDataProviders: DataProvider[] = [
         new TempoDataProvider(),
         new GroovyDataProvider(),
         new RythmDataProvider(),
+        new FlaviDataProvider(),
     ];
 
 export class DataProvidingService {

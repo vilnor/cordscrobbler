@@ -7,13 +7,13 @@ export class RythmDataProvider implements DataProvider {
     readonly possibleUsernames = ['Rythm', 'Rythm 2', 'Rythm 3', 'Rythm 4', 'Rythm 5']
 
     isHandleableMessage(message: Message): boolean {
-        return (this.possibleUsernames.includes(message.author.username)) && (message?.embeds[0]?.title === 'Now Playing 🎵'); // TODO or skipped
+        return (this.possibleUsernames.includes(message?.author?.username)) && (message?.embeds?.[0]?.title === 'Now Playing 🎵'); // TODO or skipped
     }
 
     getPlaybackDataFromMessage(message: Message): PlaybackData {
-        const dataString = message.embeds[0]?.description;
-        const title = dataString.slice(dataString.indexOf('[') + 1, dataString.lastIndexOf(']'));
-        const url = dataString.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)?.[0];
+        const dataString = message?.embeds?.[0]?.description;
+        const title = dataString?.slice(dataString?.indexOf('[') + 1, dataString?.lastIndexOf(']'));
+        const url = dataString?.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)?.[0];
         
         return {
             title,

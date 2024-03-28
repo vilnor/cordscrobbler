@@ -7,18 +7,18 @@ export class HydraDataProvider implements DataProvider {
     readonly possibleUsernames = ['Hydra', 'Hydra 2', 'Hydra 3', 'Hydra Staging']
 
     isHandleableMessage(message: Message): boolean {
-        return (this.possibleUsernames.includes(message.author.username)) && (message?.embeds[0]?.title === 'Now playing');
+        return (this.possibleUsernames.includes(message?.author?.username)) && (message?.embeds?.[0]?.title === 'Now playing');
     }
 
     getPlaybackDataFromMessage(message: Message): PlaybackData {
-        const dataString = message.embeds[0]?.description;
+        const dataString = message?.embeds?.[0]?.description;
         let title = dataString;
 
-        if (dataString.includes('[') && dataString.includes(']')) {
-            title = dataString.slice(dataString.indexOf('[') + 1, dataString.lastIndexOf(']'));
+        if (dataString?.includes('[') && dataString?.includes(']')) {
+            title = dataString?.slice(dataString?.indexOf('[') + 1, dataString?.lastIndexOf(']'));
         }
 
-        const url = dataString.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)?.[0];
+        const url = dataString?.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)?.[0];
         return {
             title,
             url,
