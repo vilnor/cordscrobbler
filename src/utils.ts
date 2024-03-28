@@ -100,6 +100,7 @@ export async function parseTrack(playbackData: PlaybackData, spotifyApi: Spotify
 }
 
 export async function sendNowScrobblingMessageEmbed(track: Track, discordChannel: TextChannel) {
+    if (process.env.SILENCE_MESSAGES) return;
     const nowScrobblingMessageEmbed = new MessageEmbed()
     .setColor(redColorHex)
     .setTitle('Now scrobbling')
@@ -135,14 +136,17 @@ If that doesn't work, please send a report through the [official Discord server]
 }
 
 export function deleteMessage(message: Message) {
+    if (process.env.SILENCE_MESSAGES) return;
     return message.delete()
 }
 
 export function editEmbedMessageToSkipped(message: Message) {
+    if (process.env.SILENCE_MESSAGES) return;
     return message.edit(message.embeds[0].setTitle('Skipped').setFooter(''))
 }
 
 export async function composeGuildWelcomeMessageEmbed() {
+    if (process.env.SILENCE_MESSAGES) return;
     
     const messageText = `Thank you so much for adding me to this server! 😊
     
@@ -160,6 +164,7 @@ I'm open source! Visit my [GitHub project page](https://github.com/Erick2280/cor
 }
 
 export function sendSuccessfullyScrobbledMessageEmbed(track: Track, lastfmUsers: string[], discordChannel: TextChannel) {
+    if (process.env.SILENCE_MESSAGES) return;
     const successfullyScrobbledEmbed = new MessageEmbed();
 
     if (lastfmUsers.length > 0) {

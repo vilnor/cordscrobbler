@@ -23,6 +23,11 @@ export async function execute(message: Message, args: string[], usersService: Us
 
     await usersService.startRegistrationProcess(message.author);
 
+    if (process.env.SILENCE_MESSAGES){
+        await sendCompleteRegistrationEmbed(message.author, usersService);
+        return;
+    }
+
     message.author.send(`Let's connect your Last.fm account with this bot!
 First, I need you to read my Privacy Policy below (also available at https://github.com/Erick2280/cordscrobbler/tree/release/docs/PRIVACY_POLICY.md). It's short and straightforward, I promise :)
 **Use the arrows to move through the pages.**

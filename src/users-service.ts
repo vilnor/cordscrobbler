@@ -167,16 +167,16 @@ export class UsersService {
         setTimeout(() => {this.dispatchScrobble(track, playbackData, messageChannel, nowScrobblingMessage)}, timeUntilScrobbling)
     }
 
-    async dispatchScrobble(track: Track, playbackData: PlaybackData, messageChannel: TextChannel, nowScrobblingMessage: Message) {
+    async dispatchScrobble(track: Track, playbackData: PlaybackData, messageChannel: TextChannel, nowScrobblingMessage?: Message) {
         const lastfmUsers: string[] = [];
-        const skippedUsers = nowScrobblingMessage.reactions.cache.get('🚫').users.cache;
+        const skippedUsers = nowScrobblingMessage?.reactions?.cache?.get('🚫')?.users?.cache;
 
         if (this.channelLastScrobbleCandidateTimestamp.get(playbackData.channelId) === playbackData.timestamp) {
             const scrobblingRequestPromises: Promise<void>[] = [];
 
             for (const userId of playbackData.listeningUsersId) {
                 const registeredUser = this.registeredUsers.find(user => user.discordUserId === userId);
-                if (registeredUser?.isScrobbleOn && !skippedUsers.get(registeredUser.discordUserId)) {                
+                if (registeredUser?.isScrobbleOn && !skippedUsers?.get(registeredUser.discordUserId)) {
                     const scrobblingRequestPromise = this.lastfmService.scrobble([track], [playbackData], registeredUser.lastfmSessionKey)
                     .then(
                         () => { lastfmUsers.push(registeredUser.lastfmUserName) })

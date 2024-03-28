@@ -40,7 +40,7 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
     client.user.setActivity({
-        name: `${process.env.DISCORD_BOT_PREFIX}help`,
+        name: `${process.env.DISCORD_LISTENING_TO}`,
         type: 'LISTENING'
     });
     console.log(`Bot ready. Connected to Discord as ${client.user.tag}.`);
