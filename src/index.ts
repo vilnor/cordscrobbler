@@ -11,6 +11,7 @@ import { UsersService } from './users-service';
 
 import { returnExpectedCommandUsage, returnUserFriendlyErrorMessage } from './error-handling';
 import { DatabaseService } from './database-service';
+import { TextChannel } from 'discord.js';
 
 console.log('Configuring environment variables...')
 dotenv.config();
@@ -21,7 +22,9 @@ const spotifyApi = new SpotifyWebApi({
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+    partials: ['MESSAGE']
+});
 const dataProvidingService = new DataProvidingService();
 const databaseService = new DatabaseService();
 const usersService = new UsersService(databaseService);
@@ -94,6 +97,26 @@ client.on('guildCreate', async (guild: Discord.Guild) => {
 
     const welcomeMessage = await utils.composeGuildWelcomeMessageEmbed();
     channel.send(welcomeMessage); 
+});
+
+async function checkControllerUpdate(channelId: string, messageId: string) {
+    const channel = await client.channels.fetch(channelId);
+    // @ts-ignore
+    const fullMessage = await channel.messages!.fetch(messageId);
+    return fullMessage;
+}
+
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+    if (oldMessage.embeds?.[0]?.description !== newMessage.embeds?.[0]?.description
+            && newMessage.embeds?.[0]?.author?.name === 'Now playing') {
+        const fullMessage = await checkControllerUpdate(newMessage.channel?.id, newMessage.id);
+
+        const playbackData = dataProvidingService.lookForPlaybackData(fullMessage);
+        if (playbackData) {
+            const track = await utils.parseTrack(playbackData, spotifyApi);
+            await usersService.addToScrobbleQueue(track, playbackData, fullMessage.channel as TextChannel);
+        }
+    }
 });
 
 console.log('Retrieving data from database...');
