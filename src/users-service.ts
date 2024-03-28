@@ -142,17 +142,17 @@ export class UsersService {
     }
 
     async addToScrobbleQueue(track: Track, playbackData: PlaybackData, messageChannel: TextChannel) {
-        const thirtySecondsInMillis = 30000;
-        const fourMinutesInMillis = 240000;
+        const twentySecondsInMillis = 20000;
+        const oneAndAHalfMinutesInMillis = 900000;
         
         this.channelLastScrobbleCandidateTimestamp.set(playbackData.channelId, playbackData.timestamp);
         
-        if (!track || track.durationInMillis < thirtySecondsInMillis) {
+        if (!track || track.durationInMillis < twentySecondsInMillis) {
             return
         }
 
         const timeUntilScrobbling = Math.min(
-            Math.floor(track.durationInMillis / 2), fourMinutesInMillis
+            Math.floor(track.durationInMillis / 2), oneAndAHalfMinutesInMillis
         );
 
         const nowScrobblingMessage = await utils.sendNowScrobblingMessageEmbed(track, messageChannel);
