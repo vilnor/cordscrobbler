@@ -18,14 +18,14 @@ export async function execute(message: Message, args: string[], usersService: Us
             message.author.send(`Are you sure you want to delete your account? Please send **yes** to confirm within 2 minutes; otherwise send **no**.`);
     
             const dmChannel = await message.author.createDM();
-            const collector = new MessageCollector(
-                dmChannel,
-                responseMessage => (
+            const collector = dmChannel.createMessageCollector({
+                filter: responseMessage => (
                     responseMessage.author.id === message.author.id &&
                     typeof responseMessage.content === 'string'),
-                { time: twoMinutesInMillis, max: 1 }
-            );
-        
+                time: twoMinutesInMillis,
+                max: 1
+            });
+
             collector.on('collect', async responseMessage => {
                 if (responseMessage.content.toLowerCase() === 'yes') {
                     message.author.send(`Sad to see you go :/ I'm proceeding with your account deletion.`)

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import SpotifyWebApi from 'spotify-web-api-node';
 import { PlaybackData } from './data-providing-service';
 import { Track } from './users-service';
-import { TextChannel, MessageEmbed, Message, User } from 'discord.js';
+import { EmbedBuilder, Message, TextChannel, User } from 'discord.js';
 
 const redColorHex = '#E31B23'
 
@@ -101,23 +101,23 @@ export async function parseTrack(playbackData: PlaybackData, spotifyApi: Spotify
 
 export async function sendNowScrobblingMessageEmbed(track: Track, discordChannel: TextChannel) {
     if (process.env.SILENCE_MESSAGES) return;
-    const nowScrobblingMessageEmbed = new MessageEmbed()
+    const nowScrobblingMessageEmbed = new EmbedBuilder()
     .setColor(redColorHex)
     .setTitle('Now scrobbling')
-    .addField('Artist', track.artist)
-    .addField('Track', track.name)
+    .addFields({ name: 'Artist', value: track.artist })
+    .addFields({ name: 'Track', value: track.name })
 
     if (track?.album) {
-        nowScrobblingMessageEmbed.addField('Album', track.album)
+        nowScrobblingMessageEmbed.addFields({ name: 'Album', value: track.album })
     }
 
     if (track?.coverArtUrl) {
         nowScrobblingMessageEmbed.setThumbnail(track.coverArtUrl)
     }
 
-    nowScrobblingMessageEmbed.setFooter('To skip scrobbling of this track for your account, react this message with 🚫.')
+    nowScrobblingMessageEmbed.setFooter({ text: 'To skip scrobbling of this track for your account, react this message with 🚫.' })
 
-    const nowScrobblingMessage = await discordChannel.send(nowScrobblingMessageEmbed);
+    const nowScrobblingMessage = await discordChannel.send({ embeds: [nowScrobblingMessageEmbed] });
     await nowScrobblingMessage.react('🚫')
 
     return nowScrobblingMessage;
@@ -132,7 +132,7 @@ If that doesn't work, please send a report through the [official Discord server]
     const errorInfo = `Error: ${error?.message ?? 'Unspecified'}` 
     const messageEmbed = await composeBasicMessageEmbed('Scrobbling error', messageText, errorInfo);
 
-    await user.send(messageEmbed);
+    await user.send({ embeds: [messageEmbed] });
 }
 
 export function deleteMessage(message: Message) {
@@ -142,7 +142,8 @@ export function deleteMessage(message: Message) {
 
 export function editEmbedMessageToSkipped(message: Message) {
     if (process.env.SILENCE_MESSAGES) return;
-    return message.edit(message.embeds[0].setTitle('Skipped').setFooter(''))
+    const newEmbed = new EmbedBuilder().setTitle('Skipped').setFooter(null);
+    return message.edit({ embeds: [newEmbed] })
 }
 
 export async function composeGuildWelcomeMessageEmbed() {
@@ -165,29 +166,29 @@ I'm open source! Visit my [GitHub project page](https://github.com/Erick2280/cor
 
 export function sendSuccessfullyScrobbledMessageEmbed(track: Track, lastfmUsers: string[], discordChannel: TextChannel) {
     if (process.env.SILENCE_MESSAGES) return;
-    const successfullyScrobbledEmbed = new MessageEmbed();
+    const successfullyScrobbledEmbed = new EmbedBuilder();
 
     if (lastfmUsers.length > 0) {
         successfullyScrobbledEmbed.setTitle('Successfully scrobbled');
-        successfullyScrobbledEmbed.description = `**Scrobbled to:**\n${lastfmUsers.join('\n')}`
+        successfullyScrobbledEmbed.setDescription(`**Scrobbled to:**\n${lastfmUsers.join('\n')}`);
     } else {
         successfullyScrobbledEmbed.setTitle('Not scrobbled to anyone');
     }
 
     successfullyScrobbledEmbed
-        .addField('Artist', track.artist)
-        .addField('Track', track.name)
+        .addFields({ name: 'Artist', value: track.artist })
+        .addFields({ name: 'Track', value: track.name })
         .setColor(redColorHex)
     
     if (track?.album) {
-        successfullyScrobbledEmbed.addField('Album', track.album)
+        successfullyScrobbledEmbed.addFields({ name: 'Album', value: track.album })
     }
 
     if (track?.coverArtUrl) {
         successfullyScrobbledEmbed.setThumbnail(track.coverArtUrl)
     }
     
-    return discordChannel.send(successfullyScrobbledEmbed);
+    return discordChannel.send({ embeds: [successfullyScrobbledEmbed] });
 }
 
 export async function requestSpotifyApiToken(spotifyApi: SpotifyWebApi) {
@@ -195,13 +196,13 @@ export async function requestSpotifyApiToken(spotifyApi: SpotifyWebApi) {
     spotifyApi.setAccessToken(data.body['access_token']);
 }
 
-export async function composeBasicMessageEmbed(title: string, description: string = '', footer: string = '') {
-    const RegistrationMessageEmbed = new MessageEmbed();
+export async function composeBasicMessageEmbed(title: string, description: string | null = null, footer: string | null = null) {
+    const RegistrationMessageEmbed = new EmbedBuilder();
     RegistrationMessageEmbed
         .setColor(redColorHex)
         .setTitle(title)
         .setDescription(description)
-        .setFooter(footer);
+        .setFooter(footer ? { text: footer } : null);
     
     return RegistrationMessageEmbed;   
 }

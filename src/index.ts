@@ -23,7 +23,14 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 const client = new Discord.Client({
-    partials: ['MESSAGE']
+    intents: [
+        Discord.GatewayIntentBits.Guilds,
+		Discord.GatewayIntentBits.GuildMessages,
+        Discord.GatewayIntentBits.GuildMessageReactions,
+        Discord.GatewayIntentBits.DirectMessageReactions,
+		Discord.GatewayIntentBits.MessageContent,
+    ],
+    partials: [Discord.Partials.Message],
 });
 const dataProvidingService = new DataProvidingService();
 const databaseService = new DatabaseService();
@@ -39,18 +46,20 @@ for (const file of commandFiles) {
 }
 
 client.once('ready', () => {
-    client.user.setActivity({
-        name: `${process.env.DISCORD_LISTENING_TO}`,
-        type: 'LISTENING'
+    client.user.setPresence({
+       activities: [{
+           name: `${process.env.DISCORD_LISTENING_TO}`,
+           type: Discord.ActivityType.Listening,
+       }]
     });
     console.log(`Bot ready. Connected to Discord as ${client.user.tag}.`);
 });
 
-client.on('message', async (message) => {
+client.on('messageCreate', async (message) => {
     if ((message.channel instanceof Discord.DMChannel || message.channel instanceof Discord.TextChannel) &&
         !message.author.bot &&
         message.content.startsWith(process.env.DISCORD_BOT_PREFIX)) {
-        
+        console.log(message.content);
         const args: string[] = message.content.slice(process.env.DISCORD_BOT_PREFIX.length).split(/ +/);
         const commandName = args.shift().toLowerCase();
         const command = commands.get(commandName) ??
@@ -87,8 +96,8 @@ client.on('message', async (message) => {
 
 client.on('guildCreate', async (guild: Discord.Guild) => {
     let channel = guild.channels.cache.find(channel =>
-        channel.type === 'text' &&
-        channel.permissionsFor(guild.me).has('SEND_MESSAGES')
+        channel.type === Discord.ChannelType.GuildText &&
+        channel.permissionsFor(guild.members.me).has([Discord.PermissionsBitField.Flags.SendMessages])
     );
 
     if (channel == null || !(channel instanceof Discord.TextChannel)) {
@@ -96,7 +105,7 @@ client.on('guildCreate', async (guild: Discord.Guild) => {
     }
 
     const welcomeMessage = await utils.composeGuildWelcomeMessageEmbed();
-    channel.send(welcomeMessage); 
+    channel.send({ embeds: [welcomeMessage] });
 });
 
 async function checkControllerUpdate(channelId: string, messageId: string) {

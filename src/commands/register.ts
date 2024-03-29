@@ -44,7 +44,7 @@ First, I need you to read my Privacy Policy below (also available at https://git
     
         const parsedPrivacyPolicyPage = await composeBasicMessageEmbed(privacyPolicyTitle, privacyPolicyDescription, privacyPolicyPagination);
     
-        const sentMessage = await user.send(parsedPrivacyPolicyPage);
+        const sentMessage = await user.send({ embeds: [parsedPrivacyPolicyPage] });
     
         if (pageIndex === 0) {
             sentMessage.react('➡️');
@@ -56,18 +56,18 @@ First, I need you to read my Privacy Policy below (also available at https://git
             sentMessage.react('❌');
             sentMessage.react('✅');
         }
-    
-        const collector = new ReactionCollector(
-            sentMessage,
-            (newReaction, user) =>
+
+        const collector = sentMessage.createReactionCollector({
+            filter: (newReaction, user) =>
                 !user.bot &&
                 typeof newReaction.emoji.name === 'string' &&
                 (newReaction.emoji.name === '✅' ||
                     newReaction.emoji.name === '❌'||
                     newReaction.emoji.name === '➡️'||
                     newReaction.emoji.name === '⬅️'),
-            { time: tenMinutesInMillis, max: 1 }
-        );
+            time: tenMinutesInMillis,
+            max: 1
+        });
     
         collector.on('collect', async (newReaction, user) => {
             if (newReaction.emoji.name === '➡️' && pageIndex < privacyPolicyArray.length - 1) {
@@ -114,19 +114,19 @@ If the link isn't working, try copying the URL: ${lastfmRegistrationURL}
 **After you connect your account, react with ✅ to confirm.**`;
 
         const registrationEmbed = await composeBasicMessageEmbed(title, description);
-        const sentMessage = await user.send(registrationEmbed);
+        const sentMessage = await user.send({ embeds: [registrationEmbed] });
     
         await sentMessage.react('❌');
         await sentMessage.react('✅');
-        const collector = new ReactionCollector(
-            sentMessage,
-            (newReaction, user) =>
+        const collector = sentMessage.createReactionCollector({
+            filter: (newReaction, user) =>
                 !user.bot &&
                 typeof newReaction.emoji.name === 'string' &&
                 (newReaction.emoji.name === '✅' ||
                     newReaction.emoji.name === '❌'),
-            { time: tenMinutesInMillis, max: 1 }
-        );
+            time: tenMinutesInMillis,
+            max: 1
+        });
     
         collector.on('collect', async (newReaction, user) => {
             if (newReaction.emoji.name === '✅') {
@@ -161,7 +161,7 @@ If the link isn't working, try copying the URL: ${lastfmRegistrationURL}
         const title =  'Thanks! Just a second while we set everything up :)';
         let registrationEmbed = await composeBasicMessageEmbed(title);
     
-        const sentMessage = await user.send(registrationEmbed);
+        const sentMessage = await user.send({ embeds: [registrationEmbed] });
 
         try {
             const registeredUser = await usersService.completeRegistrationProcess(
@@ -175,7 +175,7 @@ You can review your settings (for example, if you wish to temporarily disable sc
             let footer = 'Happy listening! Scrobbles have been enabled for you :)';
             registrationEmbed = await composeBasicMessageEmbed(title, description, footer);
     
-            sentMessage.edit(registrationEmbed);
+            sentMessage.edit({ embeds: [registrationEmbed] });
             sentMessage.react('🎶');
     
         } catch (error) {

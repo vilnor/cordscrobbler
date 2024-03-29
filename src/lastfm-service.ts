@@ -1,6 +1,6 @@
 import axios from 'axios';
 import md5 from 'crypto-js/md5';
-import getUnixTime from 'date-fns/getUnixTime';
+import { getUnixTime } from 'date-fns/getUnixTime';
 import { Track } from './users-service';
 import { PlaybackData } from './data-providing-service';
 
