@@ -1,16 +1,12 @@
 {
   "name": "cordscrobbler",
-  "version": "2.3.2",
+  "version": "3.0.0",
   "description": "Last.fm scrobbler for songs played by bots on your Discord server.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "genversion dist/lib/version.js && tsc",
-    "prod": "genversion dist/lib/version.js && tsc && node .",
-    "start": "node .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "ts-node-dev --ignore-watch node_modules src/index.ts"
+    "start": "genversion dist/lib/version.js && tsc && node ."
   },
-  "author": "Erick Almeida",
+  "author": "Erick Almeida & Liv",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.8",

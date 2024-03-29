@@ -94,7 +94,7 @@ client.on('interactionCreate', async (interaction)=> {
         const command = commands.get(interaction.commandName);
 
         if (!command) {
-            interaction.reply(`I didn't recognize this command. You can see all the available commands by sending \`${process.env.DISCORD_BOT_PREFIX}help\`.`);
+            interaction.reply(`I didn't recognize this command. You can see all the available commands by using the \`help\` command.`);
             return;
         }
 
@@ -121,6 +121,10 @@ client.on('guildCreate', async (guild: Discord.Guild) => {
     );
 
     if (channel == null || !(channel instanceof Discord.TextChannel)) {
+        return;
+    }
+
+    if (process.env.SILENCE_MESSAGES) {
         return;
     }
 

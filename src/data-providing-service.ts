@@ -25,13 +25,16 @@ export type PlaybackData = {
 };
 
 export const allDataProviders: DataProvider[] = [
-        new ChipDataProvider(),
-        new HydraDataProvider(),
-        new JockieDataProvider(),
-        new TempoDataProvider(),
-        new GroovyDataProvider(),
-        new RythmDataProvider(),
+        // Only FlaviBot has been tested with the updates to discord.js v14
+
         new FlaviDataProvider(),
+
+        // new ChipDataProvider(),
+        // new HydraDataProvider(),
+        // new JockieDataProvider(),
+        // new TempoDataProvider(),
+        // new GroovyDataProvider(),
+        // new RythmDataProvider(),
     ];
 
 export class DataProvidingService {

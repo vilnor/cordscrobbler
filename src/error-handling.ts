@@ -55,9 +55,9 @@ export async function returnUserFriendlyErrorMessage(error: Error, interaction: 
     }
 }
 
-export function returnExpectedCommandUsage(commandName: string, usage: string, interaction: ChatInputCommandInteraction) {
-    interaction.reply({
-        content: `I didn't understand your command. To use this command, you need to send a message in this format: \`${process.env.DISCORD_BOT_PREFIX + commandName + ' ' + usage}\`.`,
+export async function returnExpectedCommandUsage(commandName: string, usage: string, interaction: ChatInputCommandInteraction) {
+    await interaction.reply({
+        content: `I didn't understand your command. Make sure you send it in the format: \`${commandName + ' ' + usage}\`.`,
         ephemeral: true,
     });
 }

@@ -3,12 +3,10 @@ import { Message } from 'discord.js';
 
 export class FlaviDataProvider implements DataProvider {
     readonly providerName = 'FlaviBot';
-    readonly providerAdditionalInfo = 'FlaviBot yay';
-    readonly possibleUsernames = ['FlaviBot']
+    readonly providerAdditionalInfo = 'Listens for updates to the FlaviBot controller message.';
 
     isHandleableMessage(message: Message): boolean {
-        // @ts-ignore
-        return ((this.possibleUsernames.includes(message?.author?.username) || message?.channel?.name === 'flavi-controller') && message.embeds?.[0]?.author?.name === 'Now playing')
+        return (message?.author?.bot && message.embeds?.[0]?.author?.name === 'Now playing')
     }
 
     getPlaybackDataFromMessage(message: Message): PlaybackData {

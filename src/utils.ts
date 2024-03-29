@@ -101,6 +101,7 @@ export async function parseTrack(playbackData: PlaybackData, spotifyApi: Spotify
 
 export async function sendNowScrobblingMessageEmbed(track: Track, discordChannel: TextChannel) {
     if (process.env.SILENCE_MESSAGES) return;
+
     const nowScrobblingMessageEmbed = new EmbedBuilder()
     .setColor(redColorHex)
     .setTitle('Now scrobbling')
@@ -127,7 +128,7 @@ export async function sendErrorMessageToUser(user: User, error: Error) {
     if (user == null) {
         return;
     }
-    const messageText = `Something went wrong when I tried to scrobble your Last.fm account. Please try to undo your registration (sending \`${process.env.DISCORD_BOT_PREFIX}unregister\`) and connect your Last.fm account again (sending \`${process.env.DISCORD_BOT_PREFIX}register\`).
+    const messageText = `Something went wrong when I tried to scrobble your Last.fm account. Please try to undo your registration (use \`unregister\`) and connect your Last.fm account again (use \`register\`).
 If that doesn't work, please send a report through the [official Discord server](https://discord.gg/yhGhQj6cGa) or through [GitHub](https://github.com/Erick2280/cordscrobbler/issues).`
     const errorInfo = `Error: ${error?.message ?? 'Unspecified'}` 
     const messageEmbed = await composeBasicMessageEmbed('Scrobbling error', messageText, errorInfo);
@@ -147,15 +148,13 @@ export function editEmbedMessageToSkipped(message: Message) {
 }
 
 export async function composeGuildWelcomeMessageEmbed() {
-    if (process.env.SILENCE_MESSAGES) return;
-    
     const messageText = `Thank you so much for adding me to this server! 😊
     
 This bot scrobbles songs played by other bots to Last.fm. I will automatically scrobble to registered users that are on the same audio channel as the bot, on any server that I'm added to.
 
-• **To enable scrobbling for you**, send \`${process.env.DISCORD_BOT_PREFIX}register\` and follow the steps to connect me with your Last.fm account.
-• **If you want a list of all commands**, send \`${process.env.DISCORD_BOT_PREFIX}help\`.
-• **To see which music bots are supported**, send \`${process.env.DISCORD_BOT_PREFIX}supportedbots\`.
+• **To enable scrobbling for you**, use \`register\` and follow the steps to connect me with your Last.fm account.
+• **If you want a list of all commands**, use \`help\`.
+• **To see which music bots are supported**, use \`supportedbots\`.
 
 Note that I will send messages to acknowledge scrobbles every song when someone requests another bot (such as Hydra) to play music. As this may bother some, I suggest creating a text channel just for bots.
 
