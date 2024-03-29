@@ -52,13 +52,7 @@ export class UsersService {
     } 
 
     cancelRegistrationProcess(discordUser: DiscordUser) {
-        const registeringUser = this.registeringUsers.find(x => x.discordUserId === discordUser.id)
         this.removeUserIdFromRegisteringUsersArray(discordUser.id);
-        
-        if (registeringUser?.activeCollector instanceof ReactionCollector) {
-            registeringUser.activeCollector.message.delete();
-        };
-        registeringUser?.activeCollector?.stop();
     }
 
     async completeRegistrationProcess(discordUser: DiscordUser): Promise<RegisteredUser> {
@@ -69,7 +63,7 @@ export class UsersService {
                 discordUserId: discordUser.id,
                 lastfmSessionKey: lastfmSessionResponse.sessionKey,
                 lastfmUserName: lastfmSessionResponse.userName,
-                registrationTimestamp: Date.now(),
+                registrationTimestamp: new Date(),
                 isScrobbleOn: true,
                 sendNewsMessages: true
             };
@@ -84,13 +78,6 @@ export class UsersService {
 
     isUserInRegistrationProcess(discordUser: DiscordUser): boolean {
         return this.registeringUsers.findIndex(x => x.discordUserId === discordUser.id) !== -1;
-    }
-
-    appendCollectorOnRegistrationProcess(discordUser: DiscordUser, activeCollector: MessageCollector | ReactionCollector) {
-        const registeringUser = this.registeringUsers.find(x => x.discordUserId === discordUser.id)
-        if (registeringUser) {
-            registeringUser.activeCollector = activeCollector;
-        }
     }
 
     private removeUserIdFromRegisteringUsersArray(userId: string) {
@@ -202,14 +189,13 @@ export type RegisteredUser = {
     discordUserId: string;
     lastfmUserName: string;
     lastfmSessionKey: string;
-    registrationTimestamp: number;
+    registrationTimestamp: Date;
     isScrobbleOn: boolean;
     sendNewsMessages: boolean;
 };
 
 export type RegisteringUser = {
     discordUserId: string;
-    activeCollector?: MessageCollector | ReactionCollector;
     lastfmRequestToken: string;
 }
 

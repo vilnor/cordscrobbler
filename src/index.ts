@@ -1,4 +1,5 @@
 import * as Discord from 'discord.js';
+import { TextChannel } from 'discord.js';
 import * as dotenv from 'dotenv';
 import * as utils from './utils';
 
@@ -9,9 +10,10 @@ import AutoPoster from 'topgg-autoposter';
 import { DataProvidingService } from './data-providing-service';
 import { UsersService } from './users-service';
 
-import { returnExpectedCommandUsage, returnUserFriendlyErrorMessage } from './error-handling';
+import { returnUserFriendlyErrorMessage } from './error-handling';
 import { DatabaseService } from './database-service';
-import { TextChannel } from 'discord.js';
+import { handleButtonInteraction as handleButtonInteractionRegister } from './commands/register';
+import { handleButtonInteraction as handleButtonInteractionUnregister } from './commands/unregister';
 
 console.log('Configuring environment variables...')
 dotenv.config();
@@ -45,7 +47,8 @@ for (const file of commandFiles) {
 	commands.set(command.data.name, command);
 }
 
-client.once('ready', () => {
+
+client.once('ready', async () => {
     client.user.setPresence({
        activities: [{
            name: `${process.env.DISCORD_LISTENING_TO}`,
@@ -53,37 +56,30 @@ client.once('ready', () => {
        }]
     });
     console.log(`Bot ready. Connected to Discord as ${client.user.tag}.`);
+
+    // Uncomment below to register commands (might update later)
+
+    // const commandsData = [...commands.values()].map((c) => c.data);
+    //
+    // const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+    //
+    // try {
+	// 	console.log(`Started refreshing ${commands.size} application (/) commands.`);
+    //
+	// 	// The put method is used to fully refresh all commands in the guild with the current set
+	// 	const data = await rest.put(
+	// 		Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+	// 		{ body: commandsData },
+	// 	);
+    //
+	// 	console.log(`Successfully reloaded application (/) commands.\n${data}`);
+	// } catch (error) {
+	// 	// And of course, make sure you catch and log any errors!
+	// 	console.error(error);
+	// }
 });
 
 client.on('messageCreate', async (message) => {
-    if ((message.channel instanceof Discord.DMChannel || message.channel instanceof Discord.TextChannel) &&
-        !message.author.bot &&
-        message.content.startsWith(process.env.DISCORD_BOT_PREFIX)) {
-        console.log(message.content);
-        const args: string[] = message.content.slice(process.env.DISCORD_BOT_PREFIX.length).split(/ +/);
-        const commandName = args.shift().toLowerCase();
-        const command = commands.get(commandName) ??
-                    commands.find(cmd => cmd.data.aliases && cmd.data.aliases.includes(commandName));
-
-        if (!command) {
-            message.reply(`I didn't recognize this command. You can see all the available commands by sending \`${process.env.DISCORD_BOT_PREFIX}help\`.`);
-            return;
-        }
-
-        if (command.data.args && args.length === 0) {
-            returnExpectedCommandUsage(commandName, command.data.usage, message);
-            return;
-        }
-
-        try {
-            await command.execute(message, args, usersService, client);
-        } catch (error) {
-            returnUserFriendlyErrorMessage(error, message, usersService, client);
-        }
-
-        // TODO: See registered users for a given guild
-    }
-
     if (message.channel instanceof Discord.TextChannel && message.author.bot) {
         const playbackData = dataProvidingService.lookForPlaybackData(message);
         if (playbackData) {
@@ -91,7 +87,31 @@ client.on('messageCreate', async (message) => {
             await usersService.addToScrobbleQueue(track, playbackData, message.channel);
         }
     }
+});
 
+client.on('interactionCreate', async (interaction)=> {
+    if (interaction.isChatInputCommand()) {
+        const command = commands.get(interaction.commandName);
+
+        if (!command) {
+            interaction.reply(`I didn't recognize this command. You can see all the available commands by sending \`${process.env.DISCORD_BOT_PREFIX}help\`.`);
+            return;
+        }
+
+        try {
+            await command.execute(interaction, usersService, client);
+        } catch (error) {
+            await returnUserFriendlyErrorMessage(error, interaction, usersService, client);
+        }
+
+        // TODO: See registered users for a given guild
+    } else if (interaction.isButton()) {
+        if (interaction.customId.startsWith('register')) {
+            await handleButtonInteractionRegister(interaction, usersService, client);
+        } else if (interaction.customId.startsWith('unregister')) {
+            await handleButtonInteractionUnregister(interaction, usersService, client);
+        }
+    }
 });
 
 client.on('guildCreate', async (guild: Discord.Guild) => {
