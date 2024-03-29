@@ -6,6 +6,19 @@ import { EmbedBuilder, Message, TextChannel, User } from 'discord.js';
 
 const redColorHex = '#E31B23'
 
+function generateArtists(artists: string[]) {
+    if (!artists.length) return;
+
+    if (artists.length == 1) {
+        return artists[0];
+    }
+
+    let artistString = artists.slice(0, -1).join(', ');
+    artistString += ` & ${artists[artists.length - 1]}`;
+
+    return artistString;
+}
+
 export async function parseTrack(playbackData: PlaybackData, spotifyApi: SpotifyWebApi): Promise<Track> {
     // Based on the implementation of https://github.com/web-scrobbler/web-scrobbler/blob/master/src/core/content/util.js
 
@@ -42,7 +55,7 @@ export async function parseTrack(playbackData: PlaybackData, spotifyApi: Spotify
             await requestSpotifyApiToken(spotifyApi);
             const spotifyTrack = await spotifyApi.getTrack(spotifyTrackIdMatch);
             return {
-                artist: spotifyTrack.body.artists[0].name,
+                artist: generateArtists(spotifyTrack.body.artists.map((a) => a.name)),
                 name: spotifyTrack.body.name,
                 durationInMillis: spotifyTrack.body.duration_ms,
                 album: spotifyTrack.body.album.name,
@@ -81,10 +94,10 @@ export async function parseTrack(playbackData: PlaybackData, spotifyApi: Spotify
     try {
         await requestSpotifyApiToken(spotifyApi);
         const spotifyTrack = await spotifyApi.searchTracks(filteredTitle);
-
+        
         if (spotifyTrack?.body?.tracks?.items[0]) {
             return {
-                artist: spotifyTrack.body.tracks.items?.[0].artists?.[0].name,
+                artist: generateArtists(spotifyTrack.body.tracks.items?.[0].artists?.map((a) => a.name)),
                 name: spotifyTrack.body.tracks.items?.[0].name,
                 durationInMillis: spotifyTrack.body.tracks.items?.[0].duration_ms,
                 album: spotifyTrack.body.tracks.items?.[0].album.name,
